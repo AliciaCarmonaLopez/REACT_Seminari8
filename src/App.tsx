@@ -5,6 +5,8 @@ import Form from './components/Form';
 import UsersList from './components/UsersList';
 import { fetchUsers, LogIn } from './services/usersService';
 import Login from './components/Login';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Update from './components/Update';
 
 interface AppState {
     currentUser: User | null;
@@ -25,11 +27,13 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState<AppState['isLoggedIn']>(false);
     const [currentUser, setCurrentUser] = useState<AppState['currentUser']>(null);
 
+
     const [uiState, setUiState] = useState<UIState>({
         isDarkMode: false,
         showNotification: false,
         newUserName: '',
     });
+
 
     const divRef = useRef<HTMLDivElement>(null); // Mantenemos el useRef como ejemplo
 
@@ -46,7 +50,7 @@ function App() {
         if (isLoggedIn) {
             loadUsers();
         }
-    }, [newUsersNumber, isLoggedIn]);
+    }, [newUsersNumber, isLoggedIn]); // se ejecuta el efecto cada vez que cambia newUsersNumber o isLoggedIn
 
     useEffect(() => {
         if (uiState.showNotification) {
@@ -96,33 +100,41 @@ function App() {
     };
 
     return (
-        <div className="App" ref={divRef}>
-            {/* Notification Popup */}
-            {uiState.showNotification && (
-                <div className={`notification ${uiState.isDarkMode ? 'dark' : 'light'}`}>
-                    User <strong>{uiState.newUserName}</strong> has been created successfully!
-                </div>
-            )}
-
-            <button onClick={toggleDarkMode} className="toggleButton">
-                {uiState.isDarkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
-
-            <div className="content">
-                {!isLoggedIn ? (
-                    <Login
-                        onLogin={({ email, password }) => handleLogin(email, password)}
-                    />
-                ) : (
-                    <>
-                        <h2>Bienvenido, {currentUser?.name}!</h2>
-                        <UsersList users={users} />
-                        <p>New users: {newUsersNumber}</p>
-                        <Form onNewUser={handleNewUser} />
-                    </>
+        <BrowserRouter>
+            <div className="App" ref={divRef}>
+                {/* Notification Popup */}
+                {uiState.showNotification && (
+                    <div className={`notification ${uiState.isDarkMode ? 'dark' : 'light'}`}>
+                        User <strong>{uiState.newUserName}</strong> has been created successfully!
+                    </div>
                 )}
+
+                <button onClick={toggleDarkMode} className="toggleButton">
+                    {uiState.isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+                <Routes>
+                    <Route path="/" element={
+                        <div className="content">
+                            {!isLoggedIn ? (
+                                <Login
+                                    onLogin={({ email, password }) => handleLogin(email, password)}
+                                />
+                            ) : (
+                                <>
+                                    <h2>Bienvenido, {currentUser?.name}!</h2>
+                                    <UsersList users={users} />
+                                    <p>New users: {newUsersNumber}</p>
+                                    <Form onNewUser={handleNewUser} />
+                                </>
+                            )}
+                        </div>
+                    }/>
+             
+                    <Route path="/update" element={<Update/>}/>
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
             </div>
-        </div>
+        </BrowserRouter> 
     );
 }
 
